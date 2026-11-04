@@ -16,7 +16,7 @@ import mm.pp.clicker.tools.CommandResolver;
 
 public class HttpServer extends NanoHTTPD {
     public HttpServer(int port) throws IOException {
-        super(port);
+        super("127.0.0.1",port);
 
     }
 
