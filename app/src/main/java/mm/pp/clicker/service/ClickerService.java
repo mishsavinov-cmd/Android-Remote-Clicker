@@ -84,6 +84,24 @@ public class ClickerService extends AccessibilityService {
                                     command.pos.get(1).y,
                                     command.duration);
                             break;
+                        case SCREENSHOT:
+                            performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);   // Android 9+
+                            break;
+                        case BACK:
+                            performGlobalAction(GLOBAL_ACTION_BACK);
+                            break;
+                        case HOME:
+                            performGlobalAction(GLOBAL_ACTION_HOME);
+                            break;
+                        case RECENTS:
+                            performGlobalAction(GLOBAL_ACTION_RECENTS);
+                            break;
+                        case NOTIFICATIONS:
+                            performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
+                            break;
+                        case LOCK:
+                            performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN);       // Android 9+
+                            break;
                         default:
                             Log.e(TAG, "Not vaild command");
                             throw new Exception("");
