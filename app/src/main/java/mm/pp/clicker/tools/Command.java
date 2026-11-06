@@ -29,7 +29,9 @@ import java.util.ArrayList;
 
 public class Command {
     public enum Actions {
-        CLICK("click"), SLEEP("sleep"), SWIPE("swipe");
+        CLICK("click"), SLEEP("sleep"), SWIPE("swipe"),
+        SCREENSHOT("screenshot"), BACK("back"), HOME("home"), RECENTS("recents"),
+        NOTIFICATIONS("notifications"), LOCK("lock");
         public String name;
 
         Actions(String name) {

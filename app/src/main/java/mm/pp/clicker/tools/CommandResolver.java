@@ -85,6 +85,19 @@ public class CommandResolver {
                         throw new IllegalStateException("Not a command: " + parts.toString());
                 }
                 break;
+            case SCREENSHOT:
+            case BACK:
+            case HOME:
+            case RECENTS:
+            case NOTIFICATIONS:
+            case LOCK:
+                if (parts.length != 1) {
+                    throw new IllegalStateException("Not a command: " + src);
+                }
+                command.action = parts[0];
+                command.duration = 0;
+                command.delay = 0;
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + parts[0]);
 
