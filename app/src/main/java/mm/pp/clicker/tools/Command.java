@@ -31,7 +31,8 @@ public class Command {
     public enum Actions {
         CLICK("click"), SLEEP("sleep"), SWIPE("swipe"),
         SCREENSHOT("screenshot"), BACK("back"), HOME("home"), RECENTS("recents"),
-        NOTIFICATIONS("notifications"), LOCK("lock");
+        NOTIFICATIONS("notifications"), LOCK("lock"),
+        PASTE("paste"), SETTEXT("settext");
         public String name;
 
         Actions(String name) {
@@ -66,6 +67,7 @@ public class Command {
     public ArrayList<ActionPoint> pos;
     public Integer duration;
     public Integer delay;
+    public String text;          // для settext: текст (в команде передаётся в Base64 URL-safe, чтобы не мешали пробелы и «;»)
 
     public Command() {
         this.pos = new ArrayList<>();

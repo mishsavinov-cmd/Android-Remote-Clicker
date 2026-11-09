@@ -98,6 +98,23 @@ public class CommandResolver {
                 command.duration = 0;
                 command.delay = 0;
                 break;
+            case PASTE:
+                if (parts.length != 1) {
+                    throw new IllegalStateException("Not a command: " + src);
+                }
+                command.action = "paste";
+                command.duration = 0;
+                command.delay = 0;
+                break;
+            case SETTEXT:
+                if (parts.length != 2) {
+                    throw new IllegalStateException("Not a command: " + src);
+                }
+                command.action = "settext";
+                command.duration = 0;
+                command.delay = 0;
+                command.text = new String(java.util.Base64.getUrlDecoder().decode(parts[1]), java.nio.charset.StandardCharsets.UTF_8);
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + parts[0]);
 
