@@ -16,7 +16,7 @@ import mm.pp.clicker.tools.CommandResolver;
 
 public class HttpServer extends NanoHTTPD {
     public HttpServer(int port) throws IOException {
-        super("127.0.0.1",port);
+        super(port);
 
     }
 
@@ -52,7 +52,24 @@ public class HttpServer extends NanoHTTPD {
                     Intent intent = new Intent("mm.pp.clicker.broadcast");
                     intent.setAction("mm.pp.clicker.broadcast");
                     intent.putExtra("commands", command.commands);
+                    boolean needResult = command.commands != null
+                            && (command.commands.startsWith("paste") || command.commands.startsWith("settext"));
+                    if (needResult) {
+                        ClickerService.RESULT.set(null);
+                    }
                     HttpService.getInstance().sendBroadcast(intent);
+                    if (needResult) {
+                        // ждём результат вставки (до 4 секунд) и возвращаем его скрипту: "ok" или "fail"
+                        for (int i = 0; i < 80 && ClickerService.RESULT.get() == null; i++) {
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                        String r = ClickerService.RESULT.get();
+                        return newFixedLengthResponse(r == null ? "fail" : r);
+                    }
                 }
 
 
