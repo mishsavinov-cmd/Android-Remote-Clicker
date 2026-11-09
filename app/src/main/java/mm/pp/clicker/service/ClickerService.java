@@ -11,11 +11,13 @@ import android.content.IntentFilter;
 import android.graphics.Path;
 
 import android.graphics.Point;
+import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.core.app.NotificationCompat;
 
@@ -24,6 +26,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicReference;
 
 import mm.pp.clicker.R;
 import mm.pp.clicker.tools.Command;
@@ -32,6 +35,9 @@ import mm.pp.clicker.tools.CommandResolver;
 
 public class ClickerService extends AccessibilityService {
     private static final String TAG = "mm.pp.clicker.ClickerService";
+
+    /** Результат последней команды paste/settext: "ok" или "fail" (null - ещё не выполнена). Читает HttpServer. */
+    public static final AtomicReference<String> RESULT = new AtomicReference<>(null);
 
 
     @Override
@@ -102,6 +108,12 @@ public class ClickerService extends AccessibilityService {
                         case LOCK:
                             performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN);       // Android 9+
                             break;
+                        case PASTE:
+                            RESULT.set(pasteFocused() ? "ok" : "fail");
+                            break;
+                        case SETTEXT:
+                            RESULT.set(setTextFocused(command.text) ? "ok" : "fail");
+                            break;
                         default:
                             Log.e(TAG, "Not vaild command");
                             throw new Exception("");
@@ -146,6 +158,51 @@ public class ClickerService extends AccessibilityService {
         return super.onUnbind(intent);
     }
 
+
+    /** Поле ввода, которое сейчас в фокусе (несколько попыток: после нажатия фокус появляется не сразу). */
+    private AccessibilityNodeInfo focusedInput() {
+        for (int i = 0; i < 4; i++) {
+            AccessibilityNodeInfo root = getRootInActiveWindow();
+            if (root != null) {
+                AccessibilityNodeInfo f = root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
+                if (f != null) {
+                    return f;
+                }
+            }
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /** Вставить содержимое буфера обмена в поле в фокусе (без долгого нажатия и всплывающего меню). */
+    private boolean pasteFocused() {
+        AccessibilityNodeInfo f = focusedInput();
+        if (f == null) {
+            Log.d(TAG, "paste: no focused input");
+            return false;
+        }
+        boolean ok = f.performAction(AccessibilityNodeInfo.ACTION_PASTE);
+        Log.d(TAG, "paste: " + ok);
+        return ok;
+    }
+
+    /** Записать текст прямо в поле в фокусе, минуя буфер обмена (заменяет прежний текст поля). */
+    private boolean setTextFocused(String text) {
+        AccessibilityNodeInfo f = focusedInput();
+        if (f == null || text == null) {
+            Log.d(TAG, "settext: no focused input");
+            return false;
+        }
+        Bundle args = new Bundle();
+        args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
+        boolean ok = f.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args);
+        Log.d(TAG, "settext: " + ok);
+        return ok;
+    }
 
     // 模拟点击
     public void click(float x, float y) {
